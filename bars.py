@@ -27,7 +27,8 @@ def get_smallest_bar(data):
             quantity_of_seats=bar["Cells"]["SeatsCount"]
     return name_of_bar
 
-
+#Как считать расстояние между GPS координатами?
+#Как длину отрезка или как длину дуги?
 def get_closest_bar(data,longitude,latitude):
     distance=2e16
     name_of_bar=None
