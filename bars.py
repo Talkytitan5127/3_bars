@@ -6,7 +6,7 @@ from math import cos, sin
 from math import sqrt, atan2
 
 def get_length_distance(lat1, long1, lat2, long2):
-    Radius = 6372795
+    earth_radius = 6372795
 
     #translate coordinates to radians
     lat1 *= pi / 180
@@ -30,7 +30,7 @@ def get_length_distance(lat1, long1, lat2, long2):
         sl1 * cl2 * cdelta, 2))
     length_round_x = sl1 * sl2 + cl1 * cl2 * cdelta
     ad = atan2(length_round_y, length_round_x)
-    distance = ad * Radius
+    distance = ad * earth_radius
     return distance
 
 
@@ -63,14 +63,14 @@ def pretty_print(data):
 
 if __name__ == '__main__':
     filepath = input('Enter the path to the file \'bars.json\':')
-    data = load_data(filepath)
-    if data is None:
+    file_data = load_data(filepath)
+    if file_data is None:
         print('file can\'t be opened')
     else:
-        pretty_print(data)
+        pretty_print(file_data)
 
         latitude = float(input('Enter your coordinates\nlatitude:'))
         longitude = float(input('longitude:'))
-        closest_bar = get_closest_bar(data, latitude, longitude)
+        closest_bar = get_closest_bar(file_data, latitude, longitude)
         print('The closest bar is {}\nHis address is {}'.format(closest_bar['Cells']['Name'],
             closest_bar['Cells']['Address']))
