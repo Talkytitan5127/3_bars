@@ -64,7 +64,7 @@ def pretty_print(data):
 if __name__ == '__main__':
     filepath = input('Enter the path to the file \'bars.json\':')
     data = load_data(filepath)
-    if not data:
+    if data is None:
         print('file can\'t be opened')
     else:
         pretty_print(data)
