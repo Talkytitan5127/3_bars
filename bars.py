@@ -4,11 +4,14 @@ import os
 
 from math import sqrt
 
+
 def get_distance_between_coordinates(person_coordinates, bar_coordinates):
     person_latitude, person_longitude = person_coordinates
     bar_latitude, bar_longitude = bar_coordinates
 
-    distance = sqrt((person_latitude - bar_latitude)**2 + (person_longitude - bar_longitude)**2)
+    latitude_difference = (person_latitude - bar_latitude)**2
+    longitude_difference = (person_longitude - bar_longitude)**2
+    distance = sqrt(latitude_difference + longitude_difference)
     return distance
 
 
@@ -20,21 +23,26 @@ def load_data_from_file(filepath):
 
 
 def get_biggest_bar(bar_list):
-    biggest_bar = max(bar_list, key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
+    biggest_bar = max(
+        bar_list,
+        key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return biggest_bar
 
 
 def get_smallest_bar(bar_list):
-    smallest_bar = min(bar_list, key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
+    smallest_bar = min(
+        bar_list,
+        key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return smallest_bar
 
 
 def get_closest_bar(bar_list, coordinates):
     closest_bar = min(bar_list,
-        key=lambda bars: get_distance_between_coordinates(
-            coordinates,
-            bars['geometry']['coordinates']
-        ))
+                      key=lambda bars: get_distance_between_coordinates(
+                                        coordinates,
+                                        bars['geometry']['coordinates']
+                                        )
+                      )
     return closest_bar
 
 
@@ -67,13 +75,17 @@ Telephone: {phone},
 
 def create_argparser():
     argparser = argparse.ArgumentParser(description='Moscow bars')
-    argparser.add_argument('-b', help='get info about the biggest bar', action='store_true')
-    argparser.add_argument('-s', help='get info about the smallest bar', action='store_true')
-    argparser.add_argument('--location', help='get the nearest bar to your location',
-                            type=str, dest='location', action='store', nargs=2, metavar=('LATITUDE', 'LONGITUDE'))
-    argparser.add_argument('--filepath', help='path to file with bars in json format',
-                            type=str, dest='filepath', default='bars.json')
-    
+    argparser.add_argument('-b', help='get info about the biggest bar',
+                           action='store_true')
+    argparser.add_argument('-s', help='get info about the smallest bar',
+                           action='store_true')
+    argparser.add_argument('--location',
+                           help='get the nearest bar to your location',
+                           type=str, dest='location', action='store', nargs=2,
+                           metavar=('LATITUDE', 'LONGITUDE'))
+    argparser.add_argument('--filepath',
+                           help='path to file with bars in json format',
+                           type=str, dest='filepath', default='bars.json')
     return argparser
 
 
@@ -83,7 +95,7 @@ if __name__ == '__main__':
 
     bars_json = load_data_from_file(args.filepath)
     bars_list = bars_json['features']
-    
+
     if args.b:
         print_info_about_bar(get_biggest_bar(bars_list), 'biggest')
 
