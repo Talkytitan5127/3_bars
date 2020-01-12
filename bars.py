@@ -1,76 +1,97 @@
+import argparse
 import json
 import os
 
-from math import pi
-from math import cos, sin
-from math import sqrt, atan2
+from math import sqrt
 
-def get_length_distance(lat1, long1, lat2, long2):
-    earth_radius = 6372795
+def get_distance_between_coordinates(person_coordinates, bar_coordinates):
+    person_latitude, person_longitude = person_coordinates
+    bar_latitude, bar_longitude = bar_coordinates
 
-    #translate coordinates to radians
-    lat1 *= pi / 180
-    long1 *= pi / 180
-    lat2 *= pi / 180
-    long2 *= pi / 180
-
-    '''calculate cosinus and sinus of latitudes and
-        difference longitudes'''
-    cl1 = cos(lat1)
-    cl2 = cos(lat2)
-    sl1 = sin(lat1)
-    sl2 = sin(lat2)
-
-    delta = long2 - long1
-    cdelta = cos(delta)
-    sdelta = sin(delta)
-
-    #calculate length of bigger round
-    length_round_y = sqrt(pow(cl2 * sdelta, 2) + pow(cl1 * sl2 -
-        sl1 * cl2 * cdelta, 2))
-    length_round_x = sl1 * sl2 + cl1 * cl2 * cdelta
-    ad = atan2(length_round_y, length_round_x)
-    distance = ad * earth_radius
+    distance = sqrt((person_latitude - bar_latitude)**2 + (person_longitude - bar_longitude)**2)
     return distance
 
 
-def load_data(filepath):
+def load_data_from_file(filepath):
     if not os.path.exists(filepath):
-        return None
-    with open(filepath, 'r', encoding='UTF-8') as file_handler:
+        raise FileExistsError('File doesn\'t exist')
+    with open(filepath, 'r') as file_handler:
         return json.load(file_handler)
 
 
-def get_biggest_bar(data):
-    biggest_bar = max(data, key=lambda bars: bars['Cells']['SeatsCount'])
+def get_biggest_bar(bar_list):
+    biggest_bar = max(bar_list, key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return biggest_bar
 
-def get_smallest_bar(data):
-    smallest_bar = min(data, key=lambda bars: bars['Cells']['SeatsCount'])
+
+def get_smallest_bar(bar_list):
+    smallest_bar = min(bar_list, key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return smallest_bar
 
 
-def get_closest_bar(data, latitude, longitude):
-    closest_bar = min(data, key=lambda bars: get_length_distance(latitude, longitude,
-        bars['Cells']['geoData']['coordinates'][1], bars['Cells']['geoData']['coordinates'][0]))
+def get_closest_bar(bar_list, coordinates):
+    closest_bar = min(bar_list,
+        key=lambda bars: get_distance_between_coordinates(
+            coordinates,
+            bars['geometry']['coordinates']
+        ))
     return closest_bar
 
 
-def pretty_print(data):
-    print('The smallest bar is %s' % get_smallest_bar(data)['Cells']['Name'])
-    print('The biggest bar is %s' % get_biggest_bar(data)['Cells']['Name'])
+def get_bar_phone(info_about_bar):
+    public_phone = info_about_bar['PublicPhone'].pop()
+    return public_phone['PublicPhone']
+
+
+def print_info_about_bar(bar, search_criteria):
+    info_about_bar = bar['properties']['Attributes']
+    bar_name = info_about_bar['Name']
+    bar_address = info_about_bar['Address']
+    bar_seat_count = info_about_bar['SeatsCount']
+    bar_phone = get_bar_phone(info_about_bar)
+
+    print_string = """
+The {criteria} bar is {name}.
+You can find it at: {address},
+Telephone: {phone},
+'Seats count: {count}.
+"""
+    print(print_string.format(
+        criteria=search_criteria,
+        name=bar_name,
+        address=bar_address,
+        phone=bar_phone,
+        count=bar_seat_count
+    ))
+
+
+def create_argparser():
+    argparser = argparse.ArgumentParser(description='Moscow bars')
+    argparser.add_argument('-b', help='get info about the biggest bar', action='store_true')
+    argparser.add_argument('-s', help='get info about the smallest bar', action='store_true')
+    argparser.add_argument('--location', help='get the nearest bar to your location',
+                            type=str, dest='location', action='store', nargs=2, metavar=('LATITUDE', 'LONGITUDE'))
+    argparser.add_argument('--filepath', help='path to file with bars in json format',
+                            type=str, dest='filepath', default='bars.json')
+    
+    return argparser
 
 
 if __name__ == '__main__':
-    filepath = input('Enter the path to the file \'bars.json\':')
-    file_data = load_data(filepath)
-    if file_data is None:
-        print('file can\'t be opened')
-    else:
-        pretty_print(file_data)
+    argparser = create_argparser()
+    args = argparser.parse_args()
 
-        latitude = float(input('Enter your coordinates\nlatitude:'))
-        longitude = float(input('longitude:'))
-        closest_bar = get_closest_bar(file_data, latitude, longitude)
-        print('The closest bar is {}\nHis address is {}'.format(closest_bar['Cells']['Name'],
-            closest_bar['Cells']['Address']))
+    bars_json = load_data_from_file(args.filepath)
+    bars_list = bars_json['features']
+    
+    if args.b:
+        print_info_about_bar(get_biggest_bar(bars_list), 'biggest')
+
+    if args.s:
+        print_info_about_bar(get_smallest_bar(bars_list), 'smallest')
+
+    if args.location is None:
+        exit(0)
+
+    coordinates = [float(number) for number in args.location]
+    print_info_about_bar(get_closest_bar(bars_list, coordinates), 'nearest')
