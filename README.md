@@ -2,17 +2,26 @@
 
 ## Description
 
-Get info about Moscow Bars. This console programm helps you to find out:
+Get info about Moscow Bars. This console programm output next data:
 
 * which bar is the biggest
 * which bar is the smallest
 * which bar is the nearest to your coordinates
 
-List of Moscow's bar was got in the [website](https://data.mos.ru/opendata/7710881420-bary)
+List of Moscow's bar you can download in the [website](https://data.mos.ru/opendata/7710881420-bary), click 'Скачать'
+and choose '.json' file's type.
 
 ## Requirements
 
 Python 3.5 or greater
+
+## Install
+
+Clone the repository to computer
+
+```bash
+git clone https://github.com/Talkytitan5127/3_bars
+```
 
 ## Usage
 
