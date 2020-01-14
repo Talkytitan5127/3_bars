@@ -25,22 +25,22 @@ def load_data_from_file(filepath):
         return None
 
 
-def get_biggest_bar(bar_list):
+def get_biggest_bar(bars_data):
     biggest_bar = max(
-        bar_list,
+        bars_data,
         key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return biggest_bar
 
 
-def get_smallest_bar(bar_list):
+def get_smallest_bar(bars_data):
     smallest_bar = min(
-        bar_list,
+        bars_data,
         key=lambda bars: bars['properties']['Attributes']['SeatsCount'])
     return smallest_bar
 
 
-def get_closest_bar(bar_list, coordinates):
-    closest_bar = min(bar_list,
+def get_closest_bar(bars_data, coordinates):
+    closest_bar = min(bars_data,
                       key=lambda bars: get_distance_between_coordinates(
                                         coordinates,
                                         bars['geometry']['coordinates']
@@ -76,12 +76,6 @@ Telephone: {phone},
     ))
 
 
-def check_input_location(location):
-    for number in location:
-        if not number.isdigit():
-            raise TypeError('location must be integer not str')
-
-
 def create_argparser():
     argparser = argparse.ArgumentParser(description='Moscow bars')
     argparser.add_argument('-b', help='get info about the biggest bar',
@@ -102,12 +96,11 @@ if __name__ == '__main__':
     argparser = create_argparser()
     args = argparser.parse_args()
 
-    dict_data = load_data_from_file(args.filepath)
-    if dict_data is None:
-        print('Invalid format file (maybe it"s not json)')
-        exit(1)
+    bars_data = load_data_from_file(args.filepath)
+    if bars_data is None:
+        exit('Invalid format file (maybe it"s not json)')
 
-    bars = dict_data['features']
+    bars = bars_data['features']
 
     if args.b:
         print_info_about_bar(get_biggest_bar(bars), 'biggest')
@@ -118,6 +111,8 @@ if __name__ == '__main__':
     if args.location is None:
         exit('Program was ran without arguments. The end.')
 
-    check_input_location(args.location)
-    coordinates = [float(number) for number in args.location]
-    print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')
+    try:
+        coordinates = [float(number) for number in args.location]
+        print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')
+    except ValueError:
+        exit('location must be integer not str')
