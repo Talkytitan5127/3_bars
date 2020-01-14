@@ -54,6 +54,13 @@ def get_bar_phone(info_about_bar):
     return public_phone['PublicPhone']
 
 
+def get_numeric_location(location):
+    try:
+        return [float(number) for number in location]
+    except ValueError:
+        return None
+
+
 def print_info_about_bar(bar, search_criteria):
     info_about_bar = bar['properties']['Attributes']
     bar_name = info_about_bar['Name']
@@ -111,8 +118,8 @@ if __name__ == '__main__':
     if args.location is None:
         exit('Program was ran without location.')
 
-    try:
-        coordinates = [float(number) for number in args.location]
-        print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')
-    except ValueError:
-        exit('location must be integer not str')
+    coordinates = get_numeric_location(args.location)
+    if coordinates is None:
+        exit('Location must be float not str')
+
+    print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')    
