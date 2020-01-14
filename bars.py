@@ -57,7 +57,7 @@ def get_bar_phone(info_about_bar):
 def get_numeric_location(location):
     try:
         return [float(number) for number in location]
-    except ValueError:
+    except Exception:
         return None
 
 
@@ -115,11 +115,8 @@ if __name__ == '__main__':
     if args.s:
         print_info_about_bar(get_smallest_bar(bars), 'smallest')
 
-    if args.location is None:
-        exit('Program was ran without location.')
-
     coordinates = get_numeric_location(args.location)
     if coordinates is None:
-        exit('Location must be float not str')
+        exit('smth wrong with geo location')
 
-    print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')    
+    print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')
