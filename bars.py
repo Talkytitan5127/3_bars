@@ -109,7 +109,7 @@ if __name__ == '__main__':
         print_info_about_bar(get_smallest_bar(bars), 'smallest')
 
     if args.location is None:
-        exit('Program was ran without arguments. The end.')
+        exit('Program was ran without location.')
 
     try:
         coordinates = [float(number) for number in args.location]
