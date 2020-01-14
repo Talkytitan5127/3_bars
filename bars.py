@@ -17,9 +17,12 @@ def get_distance_between_coordinates(person_coordinates, bar_coordinates):
 
 def load_data_from_file(filepath):
     if not os.path.exists(filepath):
-        raise FileExistsError('File doesn\'t exist')
-    with open(filepath, 'r') as file_handler:
-        return json.load(file_handler)
+        raise FileExistsError('File doesn"t exist')
+    try:
+        with open(filepath, 'r') as file_handler:
+            return json.load(file_handler)
+    except json.JSONDecodeError:
+        return None
 
 
 def get_biggest_bar(bar_list):
@@ -73,6 +76,12 @@ Telephone: {phone},
     ))
 
 
+def check_input_location(location):
+    for number in location:
+        if not number.isdigit():
+            raise TypeError('location must be integer not str')
+
+
 def create_argparser():
     argparser = argparse.ArgumentParser(description='Moscow bars')
     argparser.add_argument('-b', help='get info about the biggest bar',
@@ -93,17 +102,22 @@ if __name__ == '__main__':
     argparser = create_argparser()
     args = argparser.parse_args()
 
-    bars_json = load_data_from_file(args.filepath)
-    bars_list = bars_json['features']
+    dict_data = load_data_from_file(args.filepath)
+    if dict_data is None:
+        print('Invalid format file (maybe it"s not json)')
+        exit(1)
+
+    bars = dict_data['features']
 
     if args.b:
-        print_info_about_bar(get_biggest_bar(bars_list), 'biggest')
+        print_info_about_bar(get_biggest_bar(bars), 'biggest')
 
     if args.s:
-        print_info_about_bar(get_smallest_bar(bars_list), 'smallest')
+        print_info_about_bar(get_smallest_bar(bars), 'smallest')
 
     if args.location is None:
-        exit(0)
+        exit('Program was ran without arguments. The end.')
 
+    check_input_location(args.location)
     coordinates = [float(number) for number in args.location]
-    print_info_about_bar(get_closest_bar(bars_list, coordinates), 'nearest')
+    print_info_about_bar(get_closest_bar(bars, coordinates), 'nearest')
