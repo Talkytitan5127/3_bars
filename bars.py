@@ -57,7 +57,9 @@ def get_bar_phone(info_about_bar):
 def get_numeric_location(location):
     try:
         return [float(number) for number in location]
-    except Exception:
+    except ValueError:
+        return None
+    except TypeError:
         return None
 
 
